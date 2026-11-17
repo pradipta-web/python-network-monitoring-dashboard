@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Network Monitoring Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>NetMonitor</h2>
+            <span>NETWORK SYSTEM</span>
+        </div>
+
+        <nav>
+            <a href="/" class="active">Dashboard</a>
+            <a href="/devices">Devices</a>
+            <a href="/history">History</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>Network Monitoring</p>
+            <span>Version 1.0</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Network Dashboard</h1>
+                <p>Monitor your network performance</p>
+            </div>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                System Online
+            </div>
+        </header>
+
+        <section class="overview">
+            <div class="card">
+                <p>CPU Usage</p>
+                <h2 id="cpuUsage">--%</h2>
+                <span>Processor utilization</span>
+            </div>
+
+            <div class="card">
+                <p>RAM Usage</p>
+                <h2 id="ramUsage">--%</h2>
+                <span>Memory utilization</span>
+            </div>
+
+            <div class="card">
+                <p>Disk Usage</p>
+                <h2 id="diskUsage">--%</h2>
+                <span>Storage utilization</span>
+            </div>
+
+            <div class="card">
+                <p>Download Speed</p>
+                <h2 id="downloadSpeed">-- Mbps</h2>
+                <span>Current download</span>
+            </div>
+
+            <div class="card">
+                <p>Upload Speed</p>
+                <h2 id="uploadSpeed">-- Mbps</h2>
+                <span>Current upload</span>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <div class="section-header">
+                <h2>Network Bandwidth</h2>
+                <span>Real-time monitoring</span>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="bandwidthChart"></canvas>
+            </div>
+        </section>
+
+        <section class="bottom-grid">
+
+            <div class="panel">
+                <h2>System Information</h2>
+
+                <div class="info-row">
+                    <span>Hostname</span>
+                    <strong id="hostname">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Operating System</span>
+                    <strong id="operatingSystem">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Processor</span>
+                    <strong id="processor">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Total RAM</span>
+                    <strong id="totalRam">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Total Disk</span>
+                    <strong id="totalDisk">--</strong>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Network Overview</h2>
+
+                <div class="info-row">
+                    <span>Network Status</span>
+                    <strong id="networkStatus">Checking...</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Download Total</span>
+                    <strong id="totalDownloaded">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Upload Total</span>
+                    <strong id="totalUploaded">--</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Last Updated</span>
+                    <strong id="lastUpdated">--</strong>
+                </div>
+            </div>
+
+        </section>
+
+        <footer>
+            Python Network Monitoring Dashboard
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>

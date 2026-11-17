@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Monitoring History | NetMonitor</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>NetMonitor</h2>
+            <span>NETWORK SYSTEM</span>
+        </div>
+
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/devices">Devices</a>
+            <a href="/history" class="active">History</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>Network Monitoring</p>
+            <span>Version 1.0</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Monitoring History</h1>
+                <p>View historical network monitoring activity</p>
+            </div>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                System Online
+            </div>
+        </header>
+
+        <section class="history-summary">
+
+            <div class="card">
+                <p>Total Records</p>
+                <h2 id="totalRecords">0</h2>
+                <span>Monitoring records</span>
+            </div>
+
+            <div class="card">
+                <p>Online Records</p>
+                <h2 id="onlineRecords">0</h2>
+                <span>Successful checks</span>
+            </div>
+
+            <div class="card">
+                <p>Offline Records</p>
+                <h2 id="offlineRecords">0</h2>
+                <span>Failed checks</span>
+            </div>
+
+        </section>
+
+        <section class="panel history-panel">
+
+            <div class="section-header">
+                <div>
+                    <h2>Monitoring Records</h2>
+                    <span>Historical device monitoring data</span>
+                </div>
+
+                <div class="history-actions">
+
+                <a href="/api/history/export" class="export-button">
+                 Export CSV
+                </a>
+
+                <button onclick="loadHistory()" class="refresh-button">
+                 Refresh
+                </button>
+
+            </div>
+
+            <div class="history-controls">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search device name or IP address..."
+                >
+
+                <select id="statusFilter">
+                    <option value="All">All Status</option>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                </select>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Device Name</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Latency</th>
+                            <th>Packet Loss</th>
+                            <th>Checked At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="historyTable">
+                        <tr>
+                            <td colspan="7">Loading history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p id="historyMessage"></p>
+
+        </section>
+
+        <footer>
+            Python Network Monitoring Dashboard
+        </footer>
+
+    </main>
+
+</div>
+
+<script>
+
+let historyData = [];
+
+async function loadHistory() {
+
+    const table = document.getElementById("historyTable");
+    const message = document.getElementById("historyMessage");
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="7">Loading history...</td>
+        </tr>
+    `;
+
+    try {
+
+        const response = await fetch("/api/history");
+
+        if (!response.ok) {
+            throw new Error("Failed to load monitoring history");
+        }
+
+        historyData = await response.json();
+
+        updateSummary();
+
+        renderHistory();
+
+        message.textContent = "";
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="7">Unable to load history.</td>
+            </tr>
+        `;
+
+        message.textContent = error.message;
+
+        console.error(error);
+    }
+}
+
+
+function updateSummary() {
+
+    const total = historyData.length;
+
+    const online = historyData.filter(
+        item => item.status === "Online"
+    ).length;
+
+    const offline = historyData.filter(
+        item => item.status === "Offline"
+    ).length;
+
+    document.getElementById("totalRecords").textContent = total;
+
+    document.getElementById("onlineRecords").textContent = online;
+
+    document.getElementById("offlineRecords").textContent = offline;
+}
+
+
+function renderHistory() {
+
+    const table = document.getElementById("historyTable");
+
+    const search = document
+        .getElementById("searchInput")
+        .value.toLowerCase();
+
+    const status = document
+        .getElementById("statusFilter")
+        .value;
+
+    const filteredData = historyData.filter(item => {
+
+        const matchesSearch =
+            String(item.name || "").toLowerCase().includes(search) ||
+            String(item.ip_address || "").toLowerCase().includes(search);
+
+        const matchesStatus =
+            status === "All" || item.status === status;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    table.innerHTML = "";
+
+    if (filteredData.length === 0) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="7">No monitoring records found.</td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    filteredData.forEach(item => {
+
+        const row = document.createElement("tr");
+
+        const values = [
+            item.id,
+            item.name || "Unknown",
+            item.ip_address || "Unknown",
+            item.status || "Unknown",
+            item.latency === null ? "--" : `${item.latency} ms`,
+            item.packet_loss === null ? "--" : `${item.packet_loss}%`,
+            item.checked_at || "--"
+        ];
+
+        values.forEach((value, index) => {
+
+            const cell = document.createElement("td");
+
+            cell.textContent = value;
+
+            if (index === 3) {
+
+                cell.className =
+                    item.status === "Online"
+                        ? "status-online"
+                        : "status-offline";
+            }
+
+            row.appendChild(cell);
+
+        });
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+document
+    .getElementById("searchInput")
+    .addEventListener("input", renderHistory);
+
+document
+    .getElementById("statusFilter")
+    .addEventListener("change", renderHistory);
+
+
+loadHistory();
+
+</script>
+
+</body>
+</html>
